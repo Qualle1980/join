@@ -39,6 +39,7 @@ jobs:
           set ftp:ssl-force true
           set ftp:ssl-protect-data true
           set ssl:verify-certificate yes
+          set ssl:check-hostname no
           mirror --reverse --verbose --delete dist/join/browser/ /ahmad-ataya.de/httpdocs/join/
           bye
           EOF
