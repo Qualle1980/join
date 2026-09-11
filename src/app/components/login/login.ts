@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthFormStateService } from '../../core/services/auth-form-state.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TaskToastService } from '../../core/services/task-toast.service';
+import { currentGreeting } from '../../core/utils/greeting.utils';
 import { LoginCard } from './login-card/login-card';
 import { SignUpCard } from './sign-up-card/sign-up-card';
 
@@ -36,6 +37,7 @@ export class Login {
 
     protected readonly loginForm = this.formState.loginForm;
     protected readonly signUpForm = this.formState.signUpForm;
+    protected readonly greetingText = currentGreeting;
 
     /** Switches to the registration card. */
     protected openSignUp(): void {

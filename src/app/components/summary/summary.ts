@@ -4,6 +4,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { TasksService } from '../../core/services/tasks.service';
 import { UrgentHighlightService } from '../../core/services/urgent-highlight.service';
 import { TaskToastService } from '../../core/services/task-toast.service';
+import { currentGreeting } from '../../core/utils/greeting.utils';
 
 /** Dashboard with the task counters, the next urgent deadline and the greeting. */
 @Component({
@@ -24,7 +25,7 @@ export class Summary implements OnInit {
         this.authService.isGuest() ? null : this.authService.userName(),
     );
 
-    readonly greetingText = computed(() => this.getGreetingByHour(new Date().getHours()));
+    readonly greetingText = currentGreeting;
 
     private readonly tasks = this.tasksService.tasks;
 
@@ -72,14 +73,4 @@ export class Summary implements OnInit {
         this.router.navigate(['/board']);
     }
 
-    /**
-     * Picks the greeting that fits the time of day.
-     * @param hour - Hour of the day from 0 to 23.
-     * @returns Greeting for morning, afternoon or evening.
-     */
-    private getGreetingByHour(hour: number): string {
-        if (hour < 12) return 'Good morning';
-        if (hour < 18) return 'Good afternoon';
-        return 'Good evening';
-    }
 }

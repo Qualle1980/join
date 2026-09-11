@@ -55,10 +55,10 @@
             (animationend)="finishGreeting()"
         >
             @if (result() === 'user') {
-                <p>Good morning,</p>
+                <p>{{ greetingText() }},</p>
                 <strong>{{ userName() }}</strong>
             } @else {
-                <p>Good morning!</p>
+                <p>{{ greetingText() }}!</p>
             }
         </div>
     }
