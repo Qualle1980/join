@@ -133,19 +133,18 @@ export class ContactForm implements OnInit {
 
         control.setErrors({ ...(control.errors ?? {}), duplicate: true });
         control.markAsTouched();
-        this.saveFailed.emit(
-            field === 'email' ? 'Email already exists.' : 'Phone number already exists.',
-        );
     }
 
-    /** Keeps the form open, marks the duplicate field and requests an error toast. */
+    /** Keeps the form open and displays duplicate errors below their fields. */
     private handleSaveFailure(): void {
         const message = this.contactsService.error() ?? 'Something went wrong';
         if (message === 'Email already exists.') {
             this.form.controls.email.setErrors({ duplicate: true });
+            return;
         }
         if (message === 'Phone number already exists.') {
             this.form.controls.phone.setErrors({ duplicate: true });
+            return;
         }
         this.saveFailed.emit(message);
     }

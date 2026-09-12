@@ -37,7 +37,7 @@ describe('ContactForm', () => {
   it.each([
     ['Email already exists.', 'email'],
     ['Phone number already exists.', 'phone'],
-  ] as const)('keeps the form open and reports %s', async (message, field) => {
+  ] as const)('keeps the form open and shows %s only below its field', async (message, field) => {
     serviceError.set(message);
     contactsService.addContact.mockResolvedValue(null);
     const failed = vi.fn();
@@ -53,14 +53,14 @@ describe('ContactForm', () => {
     await component.onSubmit();
 
     expect(component.form.controls[field].hasError('duplicate')).toBe(true);
-    expect(failed).toHaveBeenCalledWith(message);
+    expect(failed).not.toHaveBeenCalled();
     expect(closed).not.toHaveBeenCalled();
   });
 
   it.each([
     ['email', 'Email already exists.'],
     ['phone', 'Phone number already exists.'],
-  ] as const)('reports a duplicate %s when the field loses focus', async (field, message) => {
+  ] as const)('shows a duplicate %s below the field without a toast', async (field, _message) => {
     contactsService.contactDetailExists.mockResolvedValue(true);
     const failed = vi.fn();
     component.saveFailed.subscribe(failed);
@@ -73,7 +73,7 @@ describe('ContactForm', () => {
     await component.checkDuplicate(field);
 
     expect(component.form.controls[field].hasError('duplicate')).toBe(true);
-    expect(failed).toHaveBeenCalledWith(message);
+    expect(failed).not.toHaveBeenCalled();
   });
 
   it('does not show a duplicate error for an unused email address', async () => {
