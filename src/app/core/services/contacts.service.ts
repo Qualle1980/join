@@ -5,6 +5,16 @@ import { groupContactsByLetter, sortContactsByName } from '../utils/contact-list
 import { SupabaseService } from './supabase.service';
 
 const TABLE = 'contacts';
+const DUPLICATE_ERROR_CODE = '23505';
+const DUPLICATE_EMAIL_MESSAGE = 'Email already exists.';
+const DUPLICATE_PHONE_MESSAGE = 'Phone number already exists.';
+
+interface ContactRequestError {
+  code?: string;
+  message: string;
+  details?: string;
+  hint?: string;
+}
 
 /** Loads and edits the contacts and keeps them sorted and grouped by letter. */
 @Injectable({ providedIn: 'root' })
@@ -41,7 +51,7 @@ export class ContactsService {
     const contact: NewContact = { ...input, color: input.color ?? this.nextAvatarColor() };
     const { data, error } = await this.supabase.from(TABLE).insert(contact).select().single();
     if (error) {
-      this.failRequest(error.message);
+      this.failRequest(this.contactErrorMessage(error));
       return null;
     }
     await this.loadContacts();
@@ -61,7 +71,7 @@ export class ContactsService {
       .select()
       .single();
     if (error) {
-      this.failRequest(error.message);
+      this.failRequest(this.contactErrorMessage(error));
       return null;
     }
     await this.loadContacts();
@@ -112,6 +122,20 @@ export class ContactsService {
    */
   private nextAvatarColor(): string {
     return createAvatarColor(this.contactsSignal().map((contact) => contact.color));
+  }
+
+  /**
+   * Converts database uniqueness errors into messages suitable for the contact form.
+   * @param error - Error returned by Supabase.
+   * @returns Specific duplicate message or the original database message.
+   */
+  private contactErrorMessage(error: ContactRequestError): string {
+    if (error.code !== DUPLICATE_ERROR_CODE) return error.message;
+
+    const context = `${error.message} ${error.details ?? ''} ${error.hint ?? ''}`.toLowerCase();
+    if (context.includes('phone')) return DUPLICATE_PHONE_MESSAGE;
+    if (context.includes('email')) return DUPLICATE_EMAIL_MESSAGE;
+    return 'Contact already exists.';
   }
 
   /** Marks a request as running and clears the previous error. */

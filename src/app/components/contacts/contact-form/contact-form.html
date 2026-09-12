@@ -86,6 +86,8 @@
                         @if (form.get('email')?.touched && form.get('email')?.invalid) {
                             @if (form.get('email')?.errors?.['required']) {
                                 Email is required.
+                            } @else if (form.get('email')?.errors?.['duplicate']) {
+                                Email already exists.
                             } @else if (form.get('email')?.errors?.['pattern']) {
                                 Please enter a valid email address.
                             }
@@ -112,6 +114,8 @@
                         @if (form.get('phone')?.touched && form.get('phone')?.invalid) {
                             @if (form.get('phone')?.errors?.['required']) {
                                 Phone number is required.
+                            } @else if (form.get('phone')?.errors?.['duplicate']) {
+                                Phone number already exists.
                             } @else if (form.get('phone')?.errors?.['pattern']) {
                                 Only digits and optional leading +.
                             }

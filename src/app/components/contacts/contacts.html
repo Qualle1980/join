@@ -32,6 +32,7 @@
           [editingContact]="editingContact()"
           (closed)="closeForm()"
           (saved)="onFormSaved($event)"
+          (saveFailed)="onFormSaveFailed($event)"
           (deleted)="onFormDeleted()"
         ></app-contact-form>
       </div>

@@ -182,6 +182,14 @@ export class Contacts implements OnInit {
     }
 
     /**
+     * Displays a save error while leaving the contact form open for correction.
+     * @param message - Specific reason the contact could not be saved.
+     */
+    onFormSaveFailed(message: string): void {
+        this.showToastMessage(message);
+    }
+
+    /**
      * Copies the name into the account when the saved contact belongs to the signed-in user.
      * @param contact - Contact that was just saved.
      */

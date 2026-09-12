@@ -21,6 +21,7 @@ export class ContactForm implements OnInit {
     editingContact = input<Contact | null>(null);
     closed = output<void>();
     saved = output<Contact | null>();
+    saveFailed = output<string>();
     deleted = output<void>();
 
     isSubmitting = false;
@@ -82,6 +83,10 @@ export class ContactForm implements OnInit {
         const contact = this.editingContact();
         const result = await this.saveContact(contact);
         this.isSubmitting = false;
+        if (!result) {
+            this.handleSaveFailure();
+            return;
+        }
         this.form.reset();
         this.saved.emit(result);
         this.closed.emit();
@@ -108,6 +113,18 @@ export class ContactForm implements OnInit {
         return contact
             ? this.contactsService.updateContact(contact.id, input)
             : this.contactsService.addContact(input);
+    }
+
+    /** Keeps the form open, marks the duplicate field and requests an error toast. */
+    private handleSaveFailure(): void {
+        const message = this.contactsService.error() ?? 'Something went wrong';
+        if (message === 'Email already exists.') {
+            this.form.controls.email.setErrors({ duplicate: true });
+        }
+        if (message === 'Phone number already exists.') {
+            this.form.controls.phone.setErrors({ duplicate: true });
+        }
+        this.saveFailed.emit(message);
     }
 
     /** Closes the form without saving. */
