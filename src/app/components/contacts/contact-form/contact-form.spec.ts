@@ -14,6 +14,7 @@ describe('ContactForm', () => {
     addContact: vi.fn(),
     updateContact: vi.fn(),
     deleteContact: vi.fn(),
+    contactDetailExists: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -54,5 +55,40 @@ describe('ContactForm', () => {
     expect(component.form.controls[field].hasError('duplicate')).toBe(true);
     expect(failed).toHaveBeenCalledWith(message);
     expect(closed).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['email', 'Email already exists.'],
+    ['phone', 'Phone number already exists.'],
+  ] as const)('reports a duplicate %s when the field loses focus', async (field, message) => {
+    contactsService.contactDetailExists.mockResolvedValue(true);
+    const failed = vi.fn();
+    component.saveFailed.subscribe(failed);
+    component.form.setValue({
+      name: 'Test Person',
+      email: 'test@example.com',
+      phone: '+4915799999999',
+    });
+
+    await component.checkDuplicate(field);
+
+    expect(component.form.controls[field].hasError('duplicate')).toBe(true);
+    expect(failed).toHaveBeenCalledWith(message);
+  });
+
+  it('does not show a duplicate error for an unused email address', async () => {
+    contactsService.contactDetailExists.mockResolvedValue(false);
+    const failed = vi.fn();
+    component.saveFailed.subscribe(failed);
+    component.form.setValue({
+      name: 'Test Person',
+      email: 'unused@example.com',
+      phone: '+4915799999999',
+    });
+
+    await component.checkDuplicate('email');
+
+    expect(component.form.controls.email.hasError('duplicate')).toBe(false);
+    expect(failed).not.toHaveBeenCalled();
   });
 });

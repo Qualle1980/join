@@ -1,7 +1,7 @@
 import { Component, inject, input, output, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ContactsService } from '../../../core/services/contacts.service';
+import { ContactsService, UniqueContactField } from '../../../core/services/contacts.service';
 import { Contact } from '../../../core/models/contact.model';
 import { getInitials } from '../../../core/utils/avatar.utils';
 import { EMAIL_PATTERN, fullNameValidator } from '../../../core/utils/validation.utils';
@@ -113,6 +113,29 @@ export class ContactForm implements OnInit {
         return contact
             ? this.contactsService.updateContact(contact.id, input)
             : this.contactsService.addContact(input);
+    }
+
+    /**
+     * Checks a valid email or phone value as soon as the user leaves the field.
+     * @param field - Field whose value should be checked for duplicates.
+     */
+    async checkDuplicate(field: UniqueContactField): Promise<void> {
+        const control = this.form.controls[field];
+        if (control.invalid || !control.value) return;
+
+        const checkedValue = control.value;
+        const exists = await this.contactsService.contactDetailExists(
+            field,
+            checkedValue,
+            this.editingContact()?.id,
+        );
+        if (control.value !== checkedValue || !exists) return;
+
+        control.setErrors({ ...(control.errors ?? {}), duplicate: true });
+        control.markAsTouched();
+        this.saveFailed.emit(
+            field === 'email' ? 'Email already exists.' : 'Phone number already exists.',
+        );
     }
 
     /** Keeps the form open, marks the duplicate field and requests an error toast. */

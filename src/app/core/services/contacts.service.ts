@@ -8,6 +8,7 @@ const TABLE = 'contacts';
 const DUPLICATE_ERROR_CODE = '23505';
 const DUPLICATE_EMAIL_MESSAGE = 'Email already exists.';
 const DUPLICATE_PHONE_MESSAGE = 'Phone number already exists.';
+export type UniqueContactField = 'email' | 'phone';
 
 interface ContactRequestError {
   code?: string;
@@ -117,6 +118,33 @@ export class ContactsService {
   }
 
   /**
+   * Checks whether an email address or phone number is already assigned to another contact.
+   * @param field - Contact detail to compare.
+   * @param value - Current form value.
+   * @param excludedId - Contact ignored while editing an existing entry.
+   * @returns `true` when another contact already uses the normalized value.
+   */
+  async contactDetailExists(
+    field: UniqueContactField,
+    value: string,
+    excludedId?: number,
+  ): Promise<boolean> {
+    let query = this.supabase.from(TABLE).select('id, email, phone');
+    if (excludedId !== undefined) query = query.neq('id', excludedId);
+
+    const { data, error } = await query;
+    if (error) {
+      this.failRequest(error.message);
+      return false;
+    }
+
+    const expected = this.normalizeContactDetail(field, value);
+    return (data ?? []).some((contact) =>
+      this.normalizeContactDetail(field, contact[field]) === expected,
+    );
+  }
+
+  /**
    * Picks an avatar color that stands apart from the ones in use.
    * @returns Hex color for the next contact.
    */
@@ -136,6 +164,11 @@ export class ContactsService {
     if (context.includes('phone')) return DUPLICATE_PHONE_MESSAGE;
     if (context.includes('email')) return DUPLICATE_EMAIL_MESSAGE;
     return 'Contact already exists.';
+  }
+
+  /** Normalizes a contact detail before a uniqueness comparison. */
+  private normalizeContactDetail(field: UniqueContactField, value: string): string {
+    return field === 'email' ? value.trim().toLowerCase() : value.replace(/\D/g, '');
   }
 
   /** Marks a request as running and clears the previous error. */
