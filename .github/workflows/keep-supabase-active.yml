@@ -1,0 +1,31 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    - cron: "17 6,12,18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Query Join database
+        env:
+          SUPABASE_URL: https://cwajzlvjoeexbgaieeix.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_UXCKhD7xebBXxZTTYwf5hA_2MtYFyvq
+        run: |
+          curl --fail --silent --show-error \
+            --retry 3 \
+            --retry-all-errors \
+            --max-time 30 \
+            --request POST \
+            "$SUPABASE_URL/rest/v1/rpc/keep_alive" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Content-Type: application/json" \
+            --data '{}' \
+            > /dev/null
