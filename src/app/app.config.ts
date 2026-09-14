@@ -4,16 +4,16 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
-import { provideRouter, withHashLocation } from '@angular/router';
+import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { AuthService } from './core/services/auth.service';
 
-/** Application providers: router with hash locations, plus session restore on start. */
+/** Application providers: HTML5 router paths, plus session restore on start. */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withHashLocation()),
+    provideRouter(routes),
     provideAppInitializer(() => inject(AuthService).restoreSession())
   ]
 };
